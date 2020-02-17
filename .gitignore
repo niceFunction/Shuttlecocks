@@ -6,6 +6,7 @@
 !/Assets/
 !/ProjectSettings/
 !.gitignore
+!.gitattributes
 !README.md
 
 # OS Stuff
