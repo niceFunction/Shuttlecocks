@@ -2,48 +2,71 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody2D))]
-[RequireComponent(typeof(CapsuleCollider2D))]
+[RequireComponent(typeof(CharacterController))]
 public class PlayerController : MonoBehaviour {
 
 	[System.Serializable]
 	public class PlayerProperties {
-		[Range(0f, 100f)]
+		[Range(0f, 1f)]
+		public float groundAcceleration;
+		[Range(0f, 1f)]
+		public float airAcceleration;
+		[Range(0f, 10f)]
 		public float walkingSpeed;
-		[Range(0f, 100f)]
-		public float runningSpeed;
-		[Range(0f, 100f)]
-		public float acceleration;
-		[Range(0f, 100f)]
+		[Range(0f, 10f)]
 		public float jumpForce;
+		[Min(0)]
+		public float coyoteTime;
+		[Min(0)]
+		public int numberOfJumps;
 	}
 
-	[System.Flags]
-	private enum PlayerInputs {
-		MOVE_LEFT,
-		MOVE_RIGHT,
-		JUMP
-	}
+	private CharacterController controller;
+	private Vector3 motion;
 
-	private Rigidbody2D body;
-	private new CapsuleCollider2D collider;
+	private int jumpsLeft;
+	private float timeAtFall;
+	private bool canFall;
+
 	public PlayerProperties properties;
-	private int inputs;
 
 	void Start() {
-		body = GetComponent<Rigidbody2D>();
-		collider = GetComponent<CapsuleCollider2D>();
+		controller = GetComponent<CharacterController>();
+		motion = Vector3.zero;
+		jumpsLeft = 0;
+		timeAtFall = Time.realtimeSinceStartup;
+		canFall = false;
 	}
 
-	private void OnCollisionStay2D(Collision2D collision) {
-		
-	}
-	
-	void Update() {
-	
+	private bool OutOfCoyote(float time) {
+		return !(Time.realtimeSinceStartup < time + properties.coyoteTime);
 	}
 
-	private void FixedUpdate() {
-		
+	private void Update() {
+		float a = properties.groundAcceleration;
+		if(controller.isGrounded) {
+			canFall = true;
+			jumpsLeft = properties.numberOfJumps;
+			timeAtFall = Time.realtimeSinceStartup;
+		} else if(OutOfCoyote(timeAtFall) && canFall) {
+			if(jumpsLeft > 0) { --jumpsLeft; }
+			canFall = false;
+		} else {
+			a = properties.airAcceleration;
+		}
+
+		float targetSpeed = Input.GetAxis("Horizontal") * properties.walkingSpeed;
+		motion.x = a * targetSpeed + (1f - a) * controller.velocity.x;
+		motion.y = controller.velocity.y + (Physics.gravity.y * Time.deltaTime);
+
+		if(Input.GetButtonDown("Jump") && jumpsLeft > 0) {
+			motion.y = properties.jumpForce * (jumpsLeft / properties.numberOfJumps);
+			canFall = false;
+			--jumpsLeft;
+		}
+
+		controller.Move(motion * Time.deltaTime);
+
+		Debug.Log(string.Format("{0}, {1}, {2}\n{3}", motion, jumpsLeft, controller.isGrounded, controller.velocity));
 	}
 }
