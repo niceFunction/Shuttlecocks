@@ -35,6 +35,7 @@ public class PlayerController : MonoBehaviour {
 		motion = Vector3.zero;
 		jumpsLeft = 0;
 		timeAtFall = Time.realtimeSinceStartup;
+		// Prevent OutOfCoyote from reducing jumpsLeft more than once per fall.
 		canFall = false;
 	}
 
@@ -60,13 +61,16 @@ public class PlayerController : MonoBehaviour {
 		motion.y = controller.velocity.y + (Physics.gravity.y * Time.deltaTime);
 
 		if(Input.GetButtonDown("Jump") && jumpsLeft > 0) {
-			motion.y = properties.jumpForce * (jumpsLeft / properties.numberOfJumps);
+			float impulse = properties.jumpForce * (jumpsLeft / (float)properties.numberOfJumps);
+			motion.y =
+				motion.y > impulse ? motion.y :
+				motion.y < 0 ? impulse :
+				motion.y + impulse
+			;
 			canFall = false;
 			--jumpsLeft;
 		}
 
 		controller.Move(motion * Time.deltaTime);
-
-		Debug.Log(string.Format("{0}, {1}, {2}\n{3}", motion, jumpsLeft, controller.isGrounded, controller.velocity));
 	}
 }
