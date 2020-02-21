@@ -39,8 +39,17 @@ public class PlayerController : MonoBehaviour {
 		canFall = false;
 	}
 
+	private void OnControllerColliderHit(ControllerColliderHit hit) {
+		if(Mathf.Abs(controller.velocity.x) < Time.deltaTime) {
+			var vectorDistanceToGround = Vector3.Distance(hit.normal, Vector3.up);
+			if(vectorDistanceToGround > 0.05 && vectorDistanceToGround < 1.4) {
+				transform.Translate(hit.normal.x * Time.deltaTime, 0f, 0f);
+			}
+		}
+	}
+
 	private bool OutOfCoyote(float time) {
-		return !(Time.realtimeSinceStartup < time + properties.coyoteTime);
+ 		return !(Time.realtimeSinceStartup < time + properties.coyoteTime);
 	}
 
 	private void Update() {
