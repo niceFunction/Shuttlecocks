@@ -40,7 +40,7 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	private void OnControllerColliderHit(ControllerColliderHit hit) {
-		if(Mathf.Abs(controller.velocity.x) < Time.deltaTime) {
+		if(Mathf.Abs(controller.velocity.x) < Time.deltaTime && controller.velocity.y <= 0f) {
 			var vectorDistanceToGround = Vector3.Distance(hit.normal, Vector3.up);
 			if(vectorDistanceToGround > 0.05 && vectorDistanceToGround < 1.4) {
 				transform.Translate(hit.normal.x * Time.deltaTime, 0f, 0f);
