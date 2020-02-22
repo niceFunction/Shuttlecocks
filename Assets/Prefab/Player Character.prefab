@@ -114,9 +114,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   properties:
-    groundAcceleration: 0.5
-    airAcceleration: 0.05
+    groundAcceleration: 8
+    airAcceleration: 4
     walkingSpeed: 4
-    jumpForce: 5
+    jumpImpulse: 5
     coyoteTime: 0.125
     numberOfJumps: 2

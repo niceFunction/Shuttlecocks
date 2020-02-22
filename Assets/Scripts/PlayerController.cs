@@ -7,49 +7,45 @@ public class PlayerController : MonoBehaviour {
 
 	[System.Serializable]
 	public class PlayerProperties {
-		[Range(0f, 1f)]
 		[Tooltip(
-			"A value from zero to one, representing the influence the controller has over the player's\n" +
-			"horizontal speed, when on the ground.\n" +
-			"0: No influence. Character will never begin to move, and will never stop if already moving.\n" +
-			"1: Instant response: Character will instantly move at the speed indicated by the controller."
+			"Horizontal acceleration and decceleration used when the player character is on the ground.\n" +
+			"Measured in units/seconds²"
 		)]
+		[Range(0f, 100f)]
 		public float groundAcceleration;
-		[Range(0f, 1f)]
 		[Tooltip(
-			"A value from zero to one, representing the influence the controller has over the player's\n" +
-			"horizontal speed, when in the air.\n" +
-			"0: No influence. Character will never begin to move, and will never stop if already moving.\n" +
-			"1: Instant response: Character will instantly move at the speed indicated by the controller."
+			"Horizontal acceleration and decceleration used when the player character is int the air.\n" +
+			"Measured in units/seconds²"
 		)]
+		[Range(0f, 100f)]
 		public float airAcceleration;
-		[Range(0f, 10f)]
 		[Tooltip(
 			"Maximum walking speed, in units per second. Actual walking speed will be scaled linearly by\n" +
 			"controller input."
 		)]
-		public float walkingSpeed;
 		[Range(0f, 10f)]
+		public float walkingSpeed;
 		[Tooltip(
-			"Not technically a force. This impulse is used to propell the player character into the air.\n" +
+			"This impulse is used to propell the player character into the air.\n" +
 			"If the maximum number of jumps is higher than one, the actual velocity used is scaled by the\n" +
 			"current velocity, allowing for a sweet spot where players can jump slightly higher if they time\n" +
 			"their jumps perfectly."
 		)]
-		public float jumpForce;
-		[Min(0)]
+		[Range(0f, 10f)]
+		public float jumpImpulse;
 		[Tooltip(
-			"Time meassured in seconds after the player runs off an edge, before which they can still jump\n" +
+			"Time measured in seconds after the player runs off an edge, before which they can still jump\n" +
 			"as if they were tanding on the ground."
 		)]
-		public float coyoteTime;
 		[Min(0)]
+		public float coyoteTime;
 		[Tooltip(
 			"Maximum number of times the player can jump before having to land.\n" +
 			"Actual jumping velocity is a fraction of the number of jumps, i.e. The second jump of two\n" +
 			"would be half as powerful as the first. The third jump of three would be a third as powerful\n" +
 			"as the first, etc."
 		)]
+		[Min(0)]
 		public int numberOfJumps;
 	}
 
@@ -98,11 +94,11 @@ public class PlayerController : MonoBehaviour {
 		}
 
 		float targetSpeed = Input.GetAxis("Horizontal") * properties.walkingSpeed;
-		motion.x = a * targetSpeed + (1f - a) * controller.velocity.x;
+		motion.x = Mathf.MoveTowards(controller.velocity.x, targetSpeed, a * Time.deltaTime);
 		motion.y = controller.velocity.y + (Physics.gravity.y * Time.deltaTime);
 
 		if(Input.GetButtonDown("Jump") && jumpsLeft > 0) {
-			float impulse = properties.jumpForce * (jumpsLeft / (float)properties.numberOfJumps);
+			float impulse = properties.jumpImpulse * (jumpsLeft / (float)properties.numberOfJumps);
 			motion.y =
 				motion.y > impulse ? motion.y :
 				motion.y < 0 ? impulse :
