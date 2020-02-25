@@ -6378,12 +6378,12 @@ PrefabInstance:
     - target: {fileID: 7775811483885474096, guid: 0d38f10aa3a5a8c49a518419cdb67bb1,
         type: 3}
       propertyPath: properties.airDeceleration
-      value: 10
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 7775811483885474096, guid: 0d38f10aa3a5a8c49a518419cdb67bb1,
         type: 3}
       propertyPath: properties.airAcceleration
-      value: 30
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 7775811483885474096, guid: 0d38f10aa3a5a8c49a518419cdb67bb1,
         type: 3}
@@ -6393,7 +6393,7 @@ PrefabInstance:
     - target: {fileID: 7775811483885474096, guid: 0d38f10aa3a5a8c49a518419cdb67bb1,
         type: 3}
       propertyPath: properties.jumpControl
-      value: 1
+      value: 0.775
       objectReference: {fileID: 0}
     - target: {fileID: 7775811483885474096, guid: 0d38f10aa3a5a8c49a518419cdb67bb1,
         type: 3}
@@ -6404,6 +6404,11 @@ PrefabInstance:
         type: 3}
       propertyPath: properties.terminalVelocity
       value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 7775811483885474096, guid: 0d38f10aa3a5a8c49a518419cdb67bb1,
+        type: 3}
+      propertyPath: properties.gravity
+      value: -0.75
       objectReference: {fileID: 0}
     - target: {fileID: 7775811483885474097, guid: 0d38f10aa3a5a8c49a518419cdb67bb1,
         type: 3}
