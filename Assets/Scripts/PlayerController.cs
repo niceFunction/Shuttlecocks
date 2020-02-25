@@ -109,5 +109,16 @@ public class PlayerController : MonoBehaviour {
 		}
 
 		controller.Move(motion * Time.deltaTime);
+		/*
+		Collider2D[] hits = Physics2D.OverlapCapsuleAll(transform.position, new Vector2(controller.radius, controller.height), CapsuleDirection2D.Vertical, 0);
+		foreach(Collider2D hit in hits) {
+			ColliderDistance2D cd = hit.Distance(controller.collider);
+
+			if(cd.isOverlapped) {
+				transform.Translate(cd.pointA - cd.pointB);
+			}
+		}
+		*/
+		// InitialVelocity = sqrt(2 * JumpHeight * Gravity)
 	}
 }
