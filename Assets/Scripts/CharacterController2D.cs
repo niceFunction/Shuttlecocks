@@ -7,6 +7,7 @@ using UnityEngine;
 using GameConstants;
 
 namespace Shuttlecocks {
+	[RequireComponent(typeof(SpriteRenderer))]
 	[RequireComponent(typeof(BoxCollider2D))]
 	public class CharacterController2D : MonoBehaviour {
 		public enum CharacterAnimationState {
@@ -20,12 +21,14 @@ namespace Shuttlecocks {
 
 		private int _jumpsLeft;
 		private float _timeAtFall;
-		private float _input;
+		private float _inputNow;
+		private float _inputThen;
+		private bool _snapped;
 		// Prevents OutOfCoyote from reducing jumpsLeft more than once per fall
 		private bool _canCoyote;
 		private Vector2 _motion;
 		private int _collisionLayerMask;
-
+		private SpriteRenderer _sprite;
 		[Serializable]
 		public class CharacterProperties {
 			[Tooltip(Strings.GROUND_ACCEL)]
@@ -72,9 +75,12 @@ namespace Shuttlecocks {
 			_motion = Vector2.zero;
 			_jumpsLeft = 0;
 			_timeAtFall = Time.realtimeSinceStartup;
-			_input = 0f;
+			_inputNow = 0f;
+			_inputThen = 0f;
+			_snapped = false;
 			_canCoyote = false;
 			_collisionLayerMask = Physics2D.GetLayerCollisionMask(gameObject.layer);
+			_sprite = GetComponent<SpriteRenderer>();
 
 			collider = GetComponent<BoxCollider2D>();
 			velocity = Vector2.zero;
@@ -98,7 +104,6 @@ namespace Shuttlecocks {
 				if(colliderDistance.isOverlapped) {
 					// inelastic collision
 					var separation = colliderDistance.pointA - colliderDistance.pointB;
-
 					transform.Translate(separation);
 
 					float angle = Vector2.SignedAngle(colliderDistance.normal, Vector2.up);
@@ -126,22 +131,25 @@ namespace Shuttlecocks {
 		}
 
 		private void UpdateAnimationState() {
-			// Implement
+			// Implement!
 		}
 
 		private void Update() {
 			// First up, get the input from the stick
-			_input = Input.GetAxis("Horizontal");
+			_inputNow = Input.GetAxis("Horizontal");
+
+			float inputDelta = Mathf.Abs(_inputNow - _inputThen);
+			if(!_snapped) {
+				_snapped = inputDelta >= properties.runThreshold;
+			} else {
+				_snapped = !Mathf.Approximately(_inputNow, 0f);
+			}
 
 			float targetSpeed;
 			float accel;
 			// set target speeds and acceleration or deceleration based on speed and grounded state
 			if(isGrounded) {
-				targetSpeed =
-					Mathf.Abs(_input) < properties.runThreshold ?
-					_input * properties.walkingSpeed :
-					_input * properties.runningSpeed
-				;
+				targetSpeed = _snapped ? _inputNow * properties.runningSpeed : _inputNow * properties.walkingSpeed;
 				accel =
 					Mathf.Abs(targetSpeed) < Mathf.Abs(velocity.x) ?
 					properties.groundDeceleration :
@@ -152,7 +160,7 @@ namespace Shuttlecocks {
 				_timeAtFall = Time.realtimeSinceStartup;
 				_canCoyote = true;
 			} else {
-				targetSpeed = _input * properties.airSpeed;
+				targetSpeed = _inputNow * properties.airSpeed;
 				accel =
 					Mathf.Abs(targetSpeed) < Mathf.Abs(velocity.x) ?
 					properties.airDeceleration:
@@ -164,6 +172,10 @@ namespace Shuttlecocks {
 					_canCoyote = false;
 				}
 			}
+			// 
+			if(targetSpeed > 0f) { _sprite.flipX = false; }
+			if(targetSpeed < 0f) { _sprite.flipX = true; }
+			if (Mathf.Approximately(targetSpeed, 0f)) { targetSpeed = 0f; }
 			// Calculate new motion
 			_motion.x = Mathf.MoveTowards(velocity.x, targetSpeed, accel * Time.deltaTime);
 			_motion.y = Mathf.MoveTowards(velocity.y, -properties.terminalVelocity, gravity * Time.deltaTime);
@@ -186,6 +198,7 @@ namespace Shuttlecocks {
 			velocity = _motion;
 
 			UpdateAnimationState();
+			_inputThen = _inputNow;
 		}
 	}
 }
